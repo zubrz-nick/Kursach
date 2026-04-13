@@ -11,14 +11,11 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './app.css'
 })
 export class AppComponent implements OnInit {
-  // Список заказов и товаров
   orders: any[] = [];
   products: any[] = [];
   
-  // Объект статистики (ИСПРАВЛЯЕТ ТВОЮ ОШИБКУ)
   stats: any = { revenue: 0, count: 0 };
   
-  // Управление интерфейсом
   view: 'orders' | 'menu' = 'orders';
   newProduct = { name: '', price: 0, icon: '☕' };
   
@@ -65,7 +62,7 @@ export class AppComponent implements OnInit {
   updateStatus(id: number, status: string) {
     this.http.patch(`${this.apiUrl}/index.php`, { id, status }).subscribe(() => {
       this.refreshOrders();
-      this.refreshStats(); // Обновляем статистику сразу после изменения статуса
+      this.refreshStats(); 
     });
   }
 
