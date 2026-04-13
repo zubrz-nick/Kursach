@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 // 2. Получение настроек базы данных
-$databaseUrl = getenv('DATABASE_URL');
+$databaseUrl = getenv('postgresql://etika_db_user:k3RC7YAIyqYcfpW34178RpKxKcDIWnj0@dpg-d7eip0n7f7vs738s019g-a/etika_db');
 
 try {
     if ($databaseUrl) {
