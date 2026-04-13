@@ -1,0 +1,68 @@
+<div class="admin-container">
+  <header class="admin-header">
+    <div class="header-content">
+      <h1>Etika | Панель Бариста</h1>
+      <div class="stats-container">
+        <div class="stat-item">
+          <span class="stat-label">Всего заказов:</span>
+          <span class="stat-value">{{ orders.length }}</span>
+        </div>
+        <div class="stat-indicator"><span class="dot"></span> Online</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-card">
+    <div class="table-responsive">
+      <table *ngIf="orders.length > 0; else noOrders">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Время</th>
+            <th>Описание</th>
+            <th>Сумма</th>
+            <th>Статус</th>
+            <th class="text-right">Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let o of orders; trackBy: trackByOrderId">
+            <td>#{{ o.id }}</td>
+            <td>{{ o.created_at | date:'HH:mm' }}</td>
+            <td>{{ o.description }}</td>
+            <td>{{ o.total_amount | number:'1.0-0' }} ₽</td>
+            <td>
+              <span class="status-badge" [ngClass]="{
+                'status-waiting': o.status === 'Ожидает принятия',
+                'status-accepted': o.status === 'Принят',
+                'status-ready': o.status === 'Готов',
+                'status-delivered': o.status === 'Выдан'
+              }">
+                {{ o.status }}
+              </span>
+            </td>
+            <td class="text-right">
+              <button *ngIf="o.status === 'Ожидает принятия'" 
+                      (click)="updateStatus(o.id, 'Принят')" 
+                      class="btn-action btn-accept">Принять</button>
+
+              <button *ngIf="o.status === 'Принят'" 
+                      (click)="updateStatus(o.id, 'Готов')" 
+                      class="btn-action btn-ready">Готов</button>
+
+              <button *ngIf="o.status === 'Готов'" 
+                      (click)="updateStatus(o.id, 'Выдан')" 
+                      class="btn-action btn-deliver">Выдать</button>
+
+              <span *ngIf="o.status === 'Выдан'" class="ready-check">Завершено ✅</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #noOrders>
+      <div class="empty-state"><h3>Заказов пока нет ☕</h3></div>
+    </ng-template>
+  </main>
+</div>
