@@ -20,18 +20,22 @@ export class AppComponent implements OnInit {
     setInterval(() => this.refreshOrders(), 3000);
   }
 
-  refreshOrders() {
-    this.http.get<any[]>('http://localhost:8000/index.php').subscribe({
+refreshOrders() {
+    // ЗАМЕНИЛИ 'http://localhost:8000/index.php' на переменную + путь к файлу
+    this.http.get<any[]>(`${this.apiUrl}/index.php`).subscribe({
       next: (data) => {
-        this.orders = data; // Заменяем полностью, чтобы не было дублей
+        this.orders = data;
         this.cdr.detectChanges();
-      }
+      },
+      error: (err) => console.error('Ошибка загрузки:', err)
     });
   }
 
   updateStatus(id: number, status: string) {
-    this.http.patch('http://localhost:8000/index.php', { id, status }).subscribe(() => {
-      this.refreshOrders();
+    // ЗАМЕНИЛИ 'http://localhost:8000/index.php' на переменную
+    this.http.patch(`${this.apiUrl}/index.php`, { id, status }).subscribe({
+      next: () => this.refreshOrders(),
+      error: (err) => console.error('Ошибка обновления:', err)
     });
   }
 
