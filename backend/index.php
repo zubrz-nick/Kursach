@@ -10,31 +10,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit();
 }
 
-// 2. Получение настроек базы данных
-$databaseUrl = getenv('postgresql://etika_db_user:k3RC7YAIyqYcfpW34178RpKxKcDIWnj0@dpg-d7eip0n7f7vs738s019g-a/etika_db');
+$databaseUrl = getenv('DATABASE_URL');
 
+if (!$databaseUrl) {
+    // Если вдруг переменная не дошла, выведем это для отладки
+    die(json_encode(["error" => "DATABASE_URL is missing in Environment settings"]));
+}
+$dbopts = parse_url($databaseUrl);
+$dsn = sprintf("pgsql:host=%s;port=%s;dbname=%s", 
+    $dbopts["host"], 
+    $dbopts["port"], 
+    ltrim($dbopts["path"], '/')
+);
+$user = $dbopts["user"];
+$pass = $dbopts["pass"];
 try {
-    if ($databaseUrl) {
-        // Настройки для Render (парсим URL из переменной окружения)
-        $dbopts = parse_url($databaseUrl);
-        $dsn = sprintf("pgsql:host=%s;port=%s;dbname=%s", 
-            $dbopts["dpg-d7eip0n7f7vs738s019g-a"], 
-            $dbopts["5432"], 
-            ltrim($dbopts["path"], '/')
-        );
-        $user = $dbopts["etika_db_user"];
-        $pass = $dbopts["k3RC7YAIyqYcfpW34178RpKxKcDIWnj0"];
-    } else {
-        // Локальные настройки для твоего Docker на ПК
-        $dsn = "pgsql:host=db;port=5432;dbname=etika_db";
-        $user = "postgres";
-        $pass = "password";
-    }
-
-    $pdo = new PDO($dsn, $user, $pass, [
+    $pdo = new PDO($dsn, $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
+catch (PDOException $e) {
+    echo json_encode(["error" => $e->getMessage()]);
+}
 
     // 3. АВТОМАТИЧЕСКОЕ СОЗДАНИЕ ТАБЛИЦЫ (если её еще нет)
     $createTableSql = "CREATE TABLE IF NOT EXISTS orders (
