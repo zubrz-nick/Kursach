@@ -1,6 +1,5 @@
 
 services:
-  # Клиентская часть (React)
   client-app:
     image: node:18-alpine
     working_dir: /app
@@ -9,8 +8,6 @@ services:
     ports:
       - "3000:3000"
     command: sh -c "npm install && npm start"
-
-  # Админка (Angular)
   admin-panel:
     image: node:18-alpine
     working_dir: /app
@@ -19,8 +16,6 @@ services:
     ports:
       - "4200:4200"
     command: sh -c "npm install && npx ng serve --host 0.0.0.0"
-
-  # Бэкенд (PHP)
   backend-api:
     image: php:8.1-apache
     volumes:
