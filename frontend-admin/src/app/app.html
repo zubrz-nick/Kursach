@@ -1,51 +1,127 @@
-<div class="admin-wrapper">
-  <aside class="sidebar">
-    <div class="logo">Etika.Admin</div>
-    <nav>
-      <button (click)="view='orders'" [class.active]="view==='orders'">📦 Заказы</button>
-      <button (click)="view='menu'" [class.active]="view==='menu'">☕ Меню</button>
+<div style="display: flex; min-height: 100vh; background-color: #f8f9fa; font-family: 'Inter', sans-serif;">
+  
+  <aside style="width: 280px; background-color: #121212; color: white; padding: 40px 24px; position: fixed; height: 100vh; display: flex; flex-direction: column; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 100;">
+    <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 40px; letter-spacing: -0.5px; color: #fff;">
+      Etika<span style="color: #d4a373;">.</span>Admin
+    </h2>
+    
+    <nav style="display: flex; flex-direction: column; gap: 12px; flex: 1;">
+      <button (click)="view='orders'" 
+        [style.background]="view==='orders' ? '#d4a373' : 'rgba(255,255,255,0.05)'" 
+        [style.color]="view==='orders' ? 'white' : '#ccc'"
+        style="border: none; padding: 14px 18px; text-align: left; border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.3s; display: flex; align-items: center; gap: 10px;">
+        <span>📦</span> Заказы
+      </button>
+      
+      <button (click)="view='menu'" 
+        [style.background]="view==='menu' ? '#d4a373' : 'rgba(255,255,255,0.05)'" 
+        [style.color]="view==='menu' ? 'white' : '#ccc'"
+        style="border: none; padding: 14px 18px; text-align: left; border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.3s; display: flex; align-items: center; gap: 10px;">
+        <span>☕</span> Меню
+      </button>
     </nav>
-    <div class="live-stats" *ngIf="stats">
-      <p>Сегодня: <b>{{stats.revenue}} ₽</b></p>
-      <div class="pulse"></div> Online
+
+    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-top: auto;">
+      <p style="font-size: 13px; color: #888; margin: 0 0 5px 0;">Выручка сегодня</p>
+      <h3 style="margin: 0; font-size: 24px; color: #d4a373;">{{stats?.revenue || 0}} ₽</h3>
+      <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; color: #4caf50;">
+        <span style="width: 8px; height: 8px; background: #4caf50; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #4caf50;"></span>
+        Система Online
+      </div>
     </div>
   </aside>
 
-  <main class="main-content">
-    <header>
-      <h2>{{ view === 'orders' ? 'Текущие заказы' : 'Управление меню' }}</h2>
+  <main style="margin-left: 280px; padding: 50px; width: 100%; box-sizing: border-box;">
+    
+    <header style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center;">
+      <h1 style="font-size: 28px; font-weight: 800; color: #1a1a1a; margin: 0;">
+        {{ view === 'orders' ? 'Активные заказы' : 'Управление меню' }}
+      </h1>
+      <div style="color: #888; font-size: 14px;">{{ orders.length }} записей найдено</div>
     </header>
 
-    <div *ngIf="view === 'orders'" class="grid fade-in">
-      <div *ngFor="let o of orders" class="order-tile" [attr.data-status]="o.status">
-        <div class="tile-header">
-          <span>#{{o.id}}</span>
-          <span class="badge">{{o.status}}</span>
+    <div *ngIf="view === 'orders'" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px;">
+      <div *ngFor="let o of orders; trackBy: trackByOrderId" 
+        style="background: white; border-radius: 24px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #eee; transition: 0.3s; position: relative; overflow: hidden;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <span style="font-weight: 700; color: #d1d1d1; font-size: 14px;">#{{o.id}}</span>
+          <span [attr.data-status]="o.status" 
+            style="padding: 6px 14px; border-radius: 10px; font-size: 11px; font-weight: 800; text-transform: uppercase; background: #f0f0f0; color: #666;">
+            {{o.status}}
+          </span>
         </div>
-        <p class="desc">{{o.description}}</p>
-        <div class="tile-footer">
-          <span class="price">{{o.total_amount}} ₽</span>
-          <div class="actions">
-            <button *ngIf="o.status==='Новый'" (click)="updateStatus(o.id, 'Готовится')">Принять</button>
-            <button *ngIf="o.status==='Готовится'" (click)="updateStatus(o.id, 'Готов')">Готов</button>
-            <button *ngIf="o.status==='Готов'" (click)="updateStatus(o.id, 'Выдан')">Выдать</button>
+
+        <p style="font-size: 18px; line-height: 1.5; color: #1a1a1a; margin-bottom: 25px; min-height: 54px; font-weight: 500;">
+          {{o.description}}
+        </p>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f5f5f5; padding-top: 20px;">
+          <div style="display: flex; flex-direction: column;">
+            <span style="font-size: 12px; color: #aaa;">К оплате</span>
+            <span style="font-size: 22px; font-weight: 800; color: #1a1a1a;">{{o.total_amount}} ₽</span>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button *ngIf="o.status==='Новый'" (click)="updateStatus(o.id, 'Готовится')" 
+              style="background: #1a1a1a; color: white; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600;">Принять</button>
+            <button *ngIf="o.status==='Готовится'" (click)="updateStatus(o.id, 'Готов')" 
+              style="background: #d4a373; color: white; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600;">Готов</button>
+            <button *ngIf="o.status==='Готов'" (click)="updateStatus(o.id, 'Выдан')" 
+              style="background: #4caf50; color: white; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600;">Выдать</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div *ngIf="view === 'menu'" class="menu-editor fade-in">
-      <div class="add-form">
-        <input [(ngModel)]="newProduct.name" placeholder="Название">
-        <input [(ngModel)]="newProduct.price" type="number" placeholder="Цена">
-        <button (click)="addProduct()">Добавить товар</button>
-      </div>
-      <div class="product-list">
-        <div *ngFor="let p of products" class="p-item">
-          <span>{{p.icon}} {{p.name}} — {{p.price}} ₽</span>
-          <button (click)="deleteProduct(p.id)" class="btn-del">Удалить</button>
+    <div *ngIf="view === 'menu'" style="max-width: 900px;">
+      <div style="background: white; padding: 35px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.03); margin-bottom: 40px; display: flex; gap: 15px; align-items: flex-end; border: 1px solid #eee;">
+        <div style="flex: 2;">
+          <label style="display: block; font-size: 12px; color: #aaa; margin-bottom: 8px; margin-left: 5px;">Название напитка</label>
+          <input [(ngModel)]="newProduct.name" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #eee; background: #fdfdfd; outline: none;" placeholder="Напр: Раф Кофе">
         </div>
+        <div style="flex: 1;">
+          <label style="display: block; font-size: 12px; color: #aaa; margin-bottom: 8px; margin-left: 5px;">Цена (₽)</label>
+          <input [(ngModel)]="newProduct.price" type="number" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #eee; background: #fdfdfd; outline: none;" placeholder="350">
+        </div>
+        <div style="flex: 0.5;">
+          <label style="display: block; font-size: 12px; color: #aaa; margin-bottom: 8px; margin-left: 5px;">Иконка</label>
+          <input [(ngModel)]="newProduct.icon" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #eee; background: #fdfdfd; outline: none; text-align: center;" placeholder="☕">
+        </div>
+        <button (click)="addProduct()" style="background: #1a1a1a; color: white; border: none; padding: 15px 30px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s;">Добавить</button>
+      </div>
+
+      <div style="background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #eee;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+          <thead style="background: #fcfcfc; border-bottom: 1px solid #eee;">
+            <tr>
+              <th style="padding: 20px; font-size: 13px; color: #aaa;">Продукт</th>
+              <th style="padding: 20px; font-size: 13px; color: #aaa;">Цена</th>
+              <th style="padding: 20px; font-size: 13px; color: #aaa; text-align: right;">Действие</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of products" style="border-bottom: 1px solid #f9f9f9;">
+              <td style="padding: 20px; display: flex; align-items: center; gap: 15px;">
+                <span style="font-size: 24px;">{{p.icon}}</span>
+                <span style="font-weight: 600; color: #1a1a1a;">{{p.name}}</span>
+              </td>
+              <td style="padding: 20px; font-weight: 700;">{{p.price}} ₽</td>
+              <td style="padding: 20px; text-align: right;">
+                <button (click)="deleteProduct(p.id)" style="background: none; border: none; color: #ff4d4d; font-weight: 600; cursor: pointer; font-size: 13px;">Удалить</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
+
+    <ng-template #noOrders>
+      <div style="text-align: center; padding: 100px 0; color: #ccc;">
+        <span style="font-size: 50px; display: block; margin-bottom: 20px;">☕</span>
+        <p>На данный момент активных заказов нет</p>
+      </div>
+    </ng-template>
+
   </main>
 </div>
