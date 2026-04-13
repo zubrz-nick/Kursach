@@ -9,7 +9,26 @@ header("Content-Type: application/json");
 
 try {
     $pdo = new PDO("pgsql:host=db;dbname=etika_db", "postgres", "password");
-    
+    try {
+    $createTableSql = "CREATE TABLE IF NOT EXISTS orders (
+        id SERIAL PRIMARY KEY,
+        customer_name VARCHAR(255) NOT NULL,
+        items TEXT NOT NULL,
+        total_price DECIMAL(10, 2) NOT NULL,
+        status VARCHAR(50) DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );";
+    $pdo->exec($createTableSql);
+
+    // Добавим один тестовый заказ, если таблица была пустая
+    $checkSql = "SELECT COUNT(*) FROM orders";
+    if ($pdo->query($checkSql)->fetchColumn() == 0) {
+        $pdo->exec("INSERT INTO orders (customer_name, items, total_price, status) 
+                    VALUES ('Тестовый Заказ', 'Пицца, Кола', 1200.00, 'pending')");
+    }
+    } catch (Exception $e) {
+    echo "Ошибка базы: " . $e->getMessage();
+    }
     // --- БЛОК АВТОМАТИЧЕСКОЙ ОЧИСТКИ (Раз в 24 часа) ---
     $cleanupFile = 'last_cleanup.txt';
     $lastCleanup = file_exists($cleanupFile) ? (int)file_get_contents($cleanupFile) : 0;
