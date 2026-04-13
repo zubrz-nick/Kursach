@@ -1,72 +1,51 @@
-<div class="admin-container">
-  <header class="admin-header">
-    <div class="header-content">
-      <h1>Etika | Панель Управления</h1>
-      <nav class="tab-nav">
-        <button (click)="view = 'orders'" [class.active]="view === 'orders'">Заказы</button>
-        <button (click)="view = 'menu'" [class.active]="view === 'menu'">Меню</button>
-      </nav>
+<div class="admin-wrapper">
+  <aside class="sidebar">
+    <div class="logo">Etika.Admin</div>
+    <nav>
+      <button (click)="view='orders'" [class.active]="view==='orders'">📦 Заказы</button>
+      <button (click)="view='menu'" [class.active]="view==='menu'">☕ Меню</button>
+    </nav>
+    <div class="live-stats" *ngIf="stats">
+      <p>Сегодня: <b>{{stats.revenue}} ₽</b></p>
+      <div class="pulse"></div> Online
     </div>
-  </header>
+  </aside>
 
-  <main class="content-card">
-    <div *ngIf="view === 'orders'" class="fade-in">
-      <table *ngIf="orders.length > 0; else noOrders">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Описание</th>
-            <th>Сумма</th>
-            <th>Статус</th>
-            <th class="text-right">Действия</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let o of orders; trackBy: trackByOrderId">
-            <td>#{{o.id}}</td>
-            <td>{{o.description}}</td>
-            <td>{{o.total_amount}} ₽</td>
-            <td><span class="status-badge" [attr.data-status]="o.status">{{o.status}}</span></td>
-            <td class="text-right">
-              <button *ngIf="o.status === 'Новый'" (click)="updateStatus(o.id, 'Готовится')" class="btn-s btn-accept">Принять</button>
-              <button *ngIf="o.status === 'Готовится'" (click)="updateStatus(o.id, 'Готов')" class="btn-s btn-ready">Готов</button>
-              <button *ngIf="o.status === 'Готов'" (click)="updateStatus(o.id, 'Выдан')" class="btn-s btn-deliver">Выдать</button>
-              <span *ngIf="o.status === 'Выдан'">Завершено ✅</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <main class="main-content">
+    <header>
+      <h2>{{ view === 'orders' ? 'Текущие заказы' : 'Управление меню' }}</h2>
+    </header>
+
+    <div *ngIf="view === 'orders'" class="grid fade-in">
+      <div *ngFor="let o of orders" class="order-tile" [attr.data-status]="o.status">
+        <div class="tile-header">
+          <span>#{{o.id}}</span>
+          <span class="badge">{{o.status}}</span>
+        </div>
+        <p class="desc">{{o.description}}</p>
+        <div class="tile-footer">
+          <span class="price">{{o.total_amount}} ₽</span>
+          <div class="actions">
+            <button *ngIf="o.status==='Новый'" (click)="updateStatus(o.id, 'Готовится')">Принять</button>
+            <button *ngIf="o.status==='Готовится'" (click)="updateStatus(o.id, 'Готов')">Готов</button>
+            <button *ngIf="o.status==='Готов'" (click)="updateStatus(o.id, 'Выдан')">Выдать</button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div *ngIf="view === 'menu'" class="fade-in">
-      <div class="add-box">
+    <div *ngIf="view === 'menu'" class="menu-editor fade-in">
+      <div class="add-form">
         <input [(ngModel)]="newProduct.name" placeholder="Название">
         <input [(ngModel)]="newProduct.price" type="number" placeholder="Цена">
-        <input [(ngModel)]="newProduct.icon" placeholder="☕">
-        <button (click)="addProduct()" class="btn-s btn-ready">Добавить</button>
+        <button (click)="addProduct()">Добавить товар</button>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Иконка</th>
-            <th>Название</th>
-            <th>Цена</th>
-            <th class="text-right">Действие</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let p of products">
-            <td>{{p.icon}}</td>
-            <td>{{p.name}}</td>
-            <td>{{p.price}} ₽</td>
-            <td class="text-right">
-              <button (click)="deleteProduct(p.id)" class="btn-delete">Удалить</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="product-list">
+        <div *ngFor="let p of products" class="p-item">
+          <span>{{p.icon}} {{p.name}} — {{p.price}} ₽</span>
+          <button (click)="deleteProduct(p.id)" class="btn-del">Удалить</button>
+        </div>
+      </div>
     </div>
-
-    <ng-template #noOrders><div class="empty">Заказов нет ☕</div></ng-template>
   </main>
 </div>
