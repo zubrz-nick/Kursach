@@ -26,21 +26,18 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let o of orders; trackBy: trackByOrderId">
-            <td>#{{ o.id }}</td>
-            <td>{{ o.created_at | date:'HH:mm' }}</td>
-            <td>{{ o.description }}</td>
-            <td>{{ o.total_amount | number:'1.0-0' }} ₽</td>
-            <td>
-              <span class="status-badge" [ngClass]="{
-                'status-waiting': o.status === 'Ожидает принятия',
-                'status-accepted': o.status === 'Принят',
-                'status-ready': o.status === 'Готов',
-                'status-delivered': o.status === 'Выдан'
-              }">
-                {{ o.status }}
-              </span>
-            </td>
+          <div *ngFor="let order of orders; trackBy: trackByOrderId" class="order-card">
+  <h3>Заказ №{{order.id}}</h3>
+  <p>Состав: {{order.description}}</p>
+  <p>Сумма: {{order.total_amount}} ₽</p>
+  <p>Статус: <strong>{{order.status}}</strong></p>
+
+  <div class="status-buttons">
+    <button (click)="updateStatus(order.id, 'Готовится')" [disabled]="order.status === 'Готовится'">Готовить</button>
+    <button (click)="updateStatus(order.id, 'Готов')" [disabled]="order.status === 'Готов'">Готов</button>
+    <button (click)="updateStatus(order.id, 'Выдан')" [disabled]="order.status === 'Выдан'">Выдать</button>
+  </div>
+</div>
             <td class="text-right">
               <button *ngIf="o.status === 'Ожидает принятия'" 
                       (click)="updateStatus(o.id, 'Принят')" 
