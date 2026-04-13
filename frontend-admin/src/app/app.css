@@ -1,75 +1,10 @@
-:host {
-  display: block;
-  min-height: 100vh;
-  background-color: #0f1113;
-  color: #fff;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.kds-screen { padding: 25px; }
-
-.kds-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 2px solid #2c3e50;
-  padding-bottom: 15px;
-  margin-bottom: 30px;
-}
-
-.logo { font-size: 26px; font-weight: 900; color: #f39c12; }
-.logo small { font-size: 14px; opacity: 0.5; font-weight: 400; }
-
-.kds-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 25px;
-}
-
-.order-card {
-  background: #1c1f22;
-  border-radius: 20px;
-  padding: 20px;
-  border-top: 10px solid #f39c12;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-  display: flex;
-  flex-direction: column;
-  min-height: 300px;
-}
-
-.order-card.ready { border-top-color: #27ae60; }
-.order-card.issued { border-top-color: #7f8c8d; opacity: 0.4; }
-
-.order-header { display: flex; justify-content: space-between; color: #7f8c8d; font-weight: bold; }
-.customer { font-size: 30px; font-weight: 900; margin: 15px 0; color: #fff; }
-
-.items-box {
-  flex-grow: 1;
-  background: rgba(0,0,0,0.3);
-  padding: 15px;
-  border-radius: 12px;
-  font-size: 19px;
-}
-
-.food-item { margin-bottom: 8px; }
-
-.actions { margin-top: 20px; }
-
-.btn {
-  width: 100%;
-  padding: 20px;
-  border: none;
-  border-radius: 14px;
-  font-size: 22px;
-  font-weight: 900;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.btn-new { background: #f39c12; color: #000; }
-.btn-process { background: #3498db; color: #fff; }
-.btn-done { background: #27ae60; color: #fff; }
-
-.btn:active { transform: scale(0.95); }
-
-.timer-label { text-align: center; color: #95a5a6; font-style: italic; margin-top: 10px; }
+.admin-wrapper { display: flex; min-height: 100vh; background: #f8f9fa; }
+.sidebar { width: 250px; background: #1a1a1a; color: white; padding: 30px; }
+.main-content { flex: 1; padding: 40px; }
+.order-tile { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; text-transform: uppercase; }
+[data-status="Новый"] .badge { background: #fff3cd; color: #856404; }
+[data-status="Готовится"] .badge { background: #cfe2ff; color: #084298; }
+[data-status="Готов"] .badge { background: #d1e7dd; color: #0f5132; }
+button { cursor: pointer; border-radius: 8px; transition: 0.2s; border: none; padding: 8px 15px; }
+.add-form { background: white; padding: 25px; border-radius: 15px; margin-bottom: 30px; display: flex; gap: 15px; }
