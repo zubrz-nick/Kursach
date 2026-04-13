@@ -1,37 +1,28 @@
 <?php
-// 1. Настройка CORS — без этого браузер заблокирует запросы от Angular
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PATCH, OPTIONS, DELETE");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Methods: GET, POST, PATCH, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
 
-// Ответ на preflight-запросы браузера
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') { exit; }
 
 $databaseUrl = getenv('DATABASE_URL');
 
-if (!$databaseUrl) {
-    // Если вдруг переменная не дошла, выведем это для отладки
-    die(json_encode(["error" => "DATABASE_URL is missing in Environment settings"]));
-}
-$dbopts = parse_url($databaseUrl);
-$dsn = sprintf("pgsql:host=%s;port=%s;dbname=%s", 
-    $dbopts["host"], 
-    $dbopts["port"], 
-    ltrim($dbopts["path"], '/')
-);
-$user = $dbopts["user"];
-$pass = $dbopts["pass"];
 try {
-    $pdo = new PDO($dsn, $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    if ($databaseUrl) {
+        $dbopts = parse_url($databaseUrl);
+        $dsn = "pgsql:host=" . $dbopts["host"] . ";port=" . $dbopts["port"] . ";dbname=" . ltrim($dbopts["path"], '/');
+        $user = $dbopts["user"];
+        $pass = $dbopts["pass"];
+    } else {
+        $dsn = "pgsql:host=db;port=5432;dbname=etika_db";
+        $user = "postgres";
+        $pass = "password";
+    }
+
+    // ИСПРАВЛЕННАЯ СТРОКА 29 (используем массив [])
+    $pdo = new PDO($dsn, $user, $pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION 
     ]);
-catch (PDOException $e) {
-    echo json_encode(["error" => $e->getMessage()]);
-}
 
     // 3. АВТОМАТИЧЕСКОЕ СОЗДАНИЕ ТАБЛИЦЫ (если её еще нет)
     $createTableSql = "CREATE TABLE IF NOT EXISTS orders (
