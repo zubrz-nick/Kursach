@@ -1,25 +1,42 @@
 <?php
+// 1. Настройка CORS — без этого браузер заблокирует запросы от Angular
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PATCH");
-header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: GET, POST, PATCH, OPTIONS, DELETE");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit; }
-$dsn = getenv('postgresql://etika_db_user:k3RC7YAIyqYcfpW34178RpKxKcDIWnj0@dpg-d7eip0n7f7vs738s019g-a/etika_db');
-
-if (!$dsn) {
-    $host = 'db'; 
-    $db   = 'etika_db';
-    $user = 'postgres';
-    $pass = 'password';
-    $dsn = "pgsql:host=$host;port=5432;dbname=$db;user=$user;password=$pass";
+// Ответ на preflight-запросы браузера
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
 }
+
+// 2. Получение настроек базы данных
+$databaseUrl = getenv('DATABASE_URL');
+
 try {
-    if (strpos($dsn, 'postgres://') === 0) {
-    $dsn = str_replace('postgres://', 'pgsql:', $dsn);
+    if ($databaseUrl) {
+        // Настройки для Render (парсим URL из переменной окружения)
+        $dbopts = parse_url($databaseUrl);
+        $dsn = sprintf("pgsql:host=%s;port=%s;dbname=%s", 
+            $dbopts["host"], 
+            $dbopts["port"], 
+            ltrim($dbopts["path"], '/')
+        );
+        $user = $dbopts["user"];
+        $pass = $dbopts["pass"];
+    } else {
+        // Локальные настройки для твоего Docker на ПК
+        $dsn = "pgsql:host=db;port=5432;dbname=etika_db";
+        $user = "postgres";
+        $pass = "password";
     }
-    $pdo = new PDO($dsn);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    try {
+
+    $pdo = new PDO($dsn, $user, $pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
+
+    // 3. АВТОМАТИЧЕСКОЕ СОЗДАНИЕ ТАБЛИЦЫ (если её еще нет)
     $createTableSql = "CREATE TABLE IF NOT EXISTS orders (
         id SERIAL PRIMARY KEY,
         customer_name VARCHAR(255) NOT NULL,
@@ -30,81 +47,39 @@ try {
     );";
     $pdo->exec($createTableSql);
 
-    // Добавим один тестовый заказ, если таблица была пустая
-    $checkSql = "SELECT COUNT(*) FROM orders";
-    if ($pdo->query($checkSql)->fetchColumn() == 0) {
-        $pdo->exec("INSERT INTO orders (customer_name, items, total_price, status) 
-                    VALUES ('Тестовый Заказ', 'Пицца, Кола', 1200.00, 'pending')");
-    }
-    } catch (Exception $e) {
-    echo "Ошибка базы: " . $e->getMessage();
-    }
-    // --- БЛОК АВТОМАТИЧЕСКОЙ ОЧИСТКИ (Раз в 24 часа) ---
-    $cleanupFile = 'last_cleanup.txt';
-    $lastCleanup = file_exists($cleanupFile) ? (int)file_get_contents($cleanupFile) : 0;
-
-    // Проверяем, прошло ли 86400 секунд (24 часа) с последней чистки
-    if (time() - $lastCleanup > 86400) {
-        // Удаляем заказы старше 1 дня
-        $pdo->exec("DELETE FROM orders WHERE created_at < NOW() - INTERVAL '1 day'");
-        // Записываем текущее время в файл, чтобы не чистить при каждом запросе
-        file_put_contents($cleanupFile, time());
-    }
-    // --------------------------------------------------
-
-    $data = json_decode(file_get_contents("php://input"), true);
+    // 4. ОБРАБОТКА ЗАПРОСОВ
     $method = $_SERVER['REQUEST_METHOD'];
 
-    // --- 1. АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ ---
-    if ($method === 'POST' && isset($data['action'])) {
-        if ($data['action'] === 'login') {
-            $stmt = $pdo->prepare("SELECT id, company_name FROM users WHERE email = ? AND password = ?");
-            $stmt->execute([$data['email'], $data['password']]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-            echo json_encode($user ? $user : ["error" => "Неверный логин или пароль"]);
-        }
-        if ($data['action'] === 'register') {
-            $check = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-            $check->execute([$data['email']]);
-            if ($check->fetch()) {
-                echo json_encode(["error" => "Email уже занят"]);
-            } else {
-                $stmt = $pdo->prepare("INSERT INTO users (company_name, email, password) VALUES (?, ?, ?) RETURNING id, company_name");
-                $stmt->execute([$data['name'], $data['email'], $data['password']]);
-                echo json_encode($stmt->fetch(PDO::FETCH_ASSOC));
-            }
-        }
-        exit;
+    switch ($method) {
+        case 'GET':
+            // Получаем все заказы
+            $stmt = $pdo->query("SELECT * FROM orders ORDER BY created_at DESC");
+            echo json_encode($stmt->fetchAll());
+            break;
+
+        case 'POST':
+            // Создание нового заказа (если понадобится)
+            $data = json_decode(file_get_contents('php://input'), true);
+            $sql = "INSERT INTO orders (customer_name, items, total_price) VALUES (?, ?, ?)";
+            $pdo->prepare($sql)->execute([$data['customer_name'], $data['items'], $data['total_price']]);
+            echo json_encode(["status" => "success"]);
+            break;
+
+        case 'PATCH':
+            // Обновление статуса (то, что делает твоя админка)
+            $data = json_decode(file_get_contents('php://input'), true);
+            $sql = "UPDATE orders SET status = ? WHERE id = ?";
+            $pdo->prepare($sql)->execute([$data['status'], $data['id']]);
+            echo json_encode(["status" => "updated"]);
+            break;
+
+        default:
+            echo json_encode(["message" => "Method not supported"]);
+            break;
     }
 
-    // --- 2. ПОЛУЧЕНИЕ ЗАКАЗОВ (GET) ---
-    if ($method === 'GET') {
-        if (isset($_GET['user_id'])) {
-            $stmt = $pdo->prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY id DESC");
-            $stmt->execute([$_GET['user_id']]);
-        } else {
-            $stmt = $pdo->query("SELECT * FROM orders ORDER BY id DESC");
-        }
-        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
-        exit;
-    }
-
-    // --- 3. СОЗДАНИЕ ЗАКАЗА (POST) ---
-    if ($method === 'POST') {
-        $stmt = $pdo->prepare("INSERT INTO orders (user_id, description, total_amount, status) VALUES (?, ?, ?, 'Ожидает принятия') RETURNING id");
-        $stmt->execute([$data['user_id'], $data['description'], $data['total_amount']]);
-        echo json_encode($stmt->fetch(PDO::FETCH_ASSOC));
-        exit;
-    }
-
-    // --- 4. ОБНОВЛЕНИЕ СТАТУСА (PATCH) ---
-    if ($method === 'PATCH') {
-        $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
-        $stmt->execute([$data['status'], $data['id']]);
-        echo json_encode(["status" => "updated"]);
-        exit;
-    }
-
-} catch (Exception $e) {
+} catch (PDOException $e) {
+    // Вывод ошибки в формате JSON, чтобы Angular не сломался при чтении
+    http_response_code(500);
     echo json_encode(["error" => $e->getMessage()]);
 }
