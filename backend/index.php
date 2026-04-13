@@ -18,12 +18,12 @@ try {
         // Настройки для Render (парсим URL из переменной окружения)
         $dbopts = parse_url($databaseUrl);
         $dsn = sprintf("pgsql:host=%s;port=%s;dbname=%s", 
-            $dbopts["host"], 
-            $dbopts["port"], 
+            $dbopts["dpg-d7eip0n7f7vs738s019g-a"], 
+            $dbopts["5432"], 
             ltrim($dbopts["path"], '/')
         );
-        $user = $dbopts["user"];
-        $pass = $dbopts["pass"];
+        $user = $dbopts["etika_db_user"];
+        $pass = $dbopts["k3RC7YAIyqYcfpW34178RpKxKcDIWnj0"];
     } else {
         // Локальные настройки для твоего Docker на ПК
         $dsn = "pgsql:host=db;port=5432;dbname=etika_db";
