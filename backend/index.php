@@ -28,7 +28,7 @@ try {
     }
 
     $pdo = new PDO($dsn, $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-    $pdo->exec("DROP TABLE IF EXISTS orders CASCADE;");
+    
 
     // 3. Создание таблиц (если их нет)
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (
