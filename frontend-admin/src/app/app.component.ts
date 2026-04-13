@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 })
 export class AppComponent implements OnInit {
   orders: any[] = [];
-  private apiUrl = 'https://kursach-1-eohx.onrender.com/index.php';
+  private apiUrl = 'https://kursach-h63g.onrender.com';
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
