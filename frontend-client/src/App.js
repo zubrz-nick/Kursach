@@ -41,44 +41,53 @@ const Menu = ({ cart, onAddToCart, onRemoveFromCart, onOrder }) => {
     fetch('https://kursach-h63g.onrender.com/index.php?action=get_products')
       .then(res => res.json())
       .then(data => setItems(Array.isArray(data) ? data : []))
-      .catch(err => console.error("Ошибка загрузки меню:", err));
+      .catch(err => console.error("Ошибка:", err));
   }, []);
 
-  const total = cart.reduce((sum, i) => sum + Number(i.price), 0);
-
   return (
-    <div className="page fade-in">
-      <h2>Меню</h2>
-      <div className="product-grid">
+    <div style={{ padding: '20px', paddingBottom: '100px', backgroundColor: '#fdfcfb', minHeight: '100vh' }}>
+      <h2 style={{ fontWeight: '800', marginBottom: '20px' }}>Меню</h2>
+      
+      {/* СЕТКА ТОВАРОВ */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: '1fr 1fr', 
+        gap: '15px' 
+      }}>
         {items.map(i => (
-          <div key={i.id} className="product-card">
-            <span style={{ fontSize: '36px' }}>{i.icon || '☕'}</span>
-            <div className="product-info">
-              <h3>{i.name}</h3>
-              <p>{i.price} ₽</p>
-            </div>
-            <button className="btn-add" onClick={() => onAddToCart(i)}>+</button>
+          <div key={i.id} style={{ 
+            background: 'white', 
+            padding: '15px', 
+            borderRadius: '20px', 
+            textAlign: 'center',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
+          }}>
+            <span style={{ fontSize: '40px' }}>{i.icon || '☕'}</span>
+            <h3 style={{ fontSize: '16px', margin: '10px 0 5px' }}>{i.name}</h3>
+            <p style={{ color: '#d4a373', fontWeight: 'bold', margin: '0 0 10px' }}>{i.price} ₽</p>
+            <button 
+              onClick={() => onAddToCart(i)}
+              style={{ 
+                background: '#1a1a1a', color: 'white', border: 'none', 
+                borderRadius: '10px', width: '40px', height: '40px', cursor: 'pointer' 
+              }}
+            >+</button>
           </div>
         ))}
       </div>
 
+      {/* КОРЗИНА */}
       {cart.length > 0 && (
-        <div className="cart-panel fade-in">
-          <div className="cart-header">
-            <h3>Ваш заказ</h3>
-            <span className="cart-count">{cart.length}</span>
+        <div style={{ 
+          position: 'fixed', bottom: '80px', left: '20px', right: '20px',
+          background: 'white', padding: '20px', borderRadius: '20px',
+          boxShadow: '0 -10px 30px rgba(0,0,0,0.1)', zIndex: 100
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+            <b>Ваш заказ ({cart.length})</b>
+            <b>{cart.reduce((sum, i) => sum + Number(i.price), 0)} ₽</b>
           </div>
-          <div className="cart-items">
-            {cart.map((item, index) => (
-              <div key={index} className="cart-item">
-                <span>{item.name}</span>
-                <button onClick={() => onRemoveFromCart(index)}>✕</button>
-              </div>
-            ))}
-          </div>
-          <button className="btn-main" onClick={onOrder}>
-            Заказать за {total} ₽
-          </button>
+          <button className="btn-main" onClick={onOrder}>Оформить заказ</button>
         </div>
       )}
     </div>
