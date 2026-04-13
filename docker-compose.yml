@@ -1,36 +1,31 @@
 
 services:
-  db:
-    # МЕНЯЕМ alpine на обычный (он более гибкий в правах)
-    image: postgres:15 
-    container_name: etika-db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: etika_db
-    ports:
-      - "5432:5432"
+  # Клиентская часть (React)
+  client-app:
+    image: node:18-alpine
+    working_dir: /app
     volumes:
-      # Используем простой путь без привязки к локальной папке для теста
-      - db_data_final:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    restart: always
-
-  backend:
-    image: php:8.2-apache
-    container_name: etika-backend
-    depends_on:
-      - db
+      - ./client:/app
     ports:
-      - "8000:80"
+      - "3000:3000"
+    command: sh -c "npm install && npm start"
+
+  # Админка (Angular)
+  admin-panel:
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - ./admin:/app
+    ports:
+      - "4200:4200"
+    command: sh -c "npm install && npx ng serve --host 0.0.0.0"
+
+  # Бэкенд (PHP)
+  backend-api:
+    image: php:8.1-apache
     volumes:
       - ./backend:/var/www/html
-    user: root
-    command: >
-      bash -c "apt-get update && apt-get install -y libpq-dev 
-      && docker-php-ext-install pdo pdo_pgsql 
-      && a2enmod rewrite 
-      && apache2-foreground"
-
-volumes:
-  db_data_final:
+    ports:
+      - "8080:80"
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html
