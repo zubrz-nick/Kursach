@@ -9,15 +9,17 @@ const App = () => {
   const user = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
+    // Загрузка меню
     fetch('https://kursach-h63g.onrender.com/index.php?action=get_products')
       .then(res => res.json())
-      .then(data => setItems(data))
+      .then(data => setItems(Array.isArray(data) ? data : []))
       .catch(e => console.error(e));
 
+    // Загрузка истории заказов
     if (user) {
       fetch(`https://kursach-h63g.onrender.com/index.php?user_id=${user.id}`)
         .then(res => res.json())
-        .then(data => setOrders(data));
+        .then(data => setOrders(Array.isArray(data) ? data : []));
     }
   }, [user?.id]);
 
@@ -34,16 +36,25 @@ const App = () => {
       body: JSON.stringify(orderData)
     }).then(() => {
       setCart([]);
-      alert('Заказ отправлен! Ждем вас в Etika ☕');
+      alert('Заказ отправлен! ☕');
       window.location.reload();
     });
   };
+
+  const handleLogout = () => {
+    if (window.confirm('Выйти из аккаунта?')) {
+      localStorage.removeItem('user');
+      window.location.reload();
+    }
+  };
+
+  if (!user) return <div style={{padding: '50px', textAlign: 'center'}}>Нужно войти в систему</div>;
 
   return (
     <div className="app-container">
       <header className="header">
         <h1>Etika<span style={{color: '#d4a373'}}>.</span></h1>
-        <div className="user-icon">👋 {user?.company_name || 'Гость'}</div>
+        <div className="user-icon">👋 {user.company_name}</div>
       </header>
 
       {view === 'menu' ? (
@@ -51,18 +62,18 @@ const App = () => {
           <div className="loyalty-section">
             <div className="loyalty-card">
               <h4>Ваши бонусы 🎁</h4>
-              <p style={{fontSize: '14px', opacity: 0.8}}>Каждый 6-й кофе за полцены!</p>
+              <p style={{fontSize: '13px', opacity: 0.8, margin: '5px 0'}}>Каждый 6-й заказ со скидкой 50%!</p>
               <div className="progress-container">
                 <div className="progress-bar" style={{ width: `${(orders.length % 6) / 6 * 100}%` }}></div>
               </div>
-              <small>{6 - (orders.length % 6)} заказов до бонуса</small>
+              <small>{6 - (orders.length % 6)} шагов до подарка</small>
             </div>
           </div>
 
           <div className="menu-grid">
             {items.map(item => (
               <div key={item.id} className="product-card">
-                <span className="product-icon">{item.icon}</span>
+                <span className="product-icon">{item.icon || '☕'}</span>
                 <span className="product-name">{item.name}</span>
                 <span className="product-price">{item.price} ₽</span>
                 <button className="add-btn" onClick={() => setCart([...cart, item])}>В корзину</button>
@@ -71,16 +82,19 @@ const App = () => {
           </div>
         </div>
       ) : (
-        <div className="profile-section" style={{padding: '20px'}}>
-          <h2>Ваши заказы</h2>
+        <div className="profile-section fade-in" style={{padding: '0 20px'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+            <h2>История заказов</h2>
+            <button onClick={handleLogout} className="logout-btn">Выйти 🚪</button>
+          </div>
           {orders.map(o => (
-            <div key={o.id} style={{background: 'white', padding: '15px', borderRadius: '20px', marginBottom: '10px', border: '1px solid #eee'}}>
+            <div key={o.id} className="order-history-card">
               <div style={{display: 'flex', justifyContent: 'space-between'}}>
                 <strong>#{o.id}</strong>
-                <span style={{color: '#d4a373', fontWeight: 'bold'}}>{o.status}</span>
+                <span className="status-text">{o.status}</span>
               </div>
-              <p style={{margin: '10px 0', fontSize: '14px'}}>{o.description}</p>
-              <div style={{fontWeight: '800'}}>{o.total_amount} ₽</div>
+              <p style={{margin: '10px 0', fontSize: '14px', color: '#666'}}>{o.description}</p>
+              <div style={{fontWeight: '800', fontSize: '16px'}}>{o.total_amount} ₽</div>
             </div>
           ))}
         </div>
@@ -89,19 +103,19 @@ const App = () => {
       {cart.length > 0 && view === 'menu' && (
         <div className="cart-float">
           <div>
-            <div style={{fontSize: '12px', opacity: 0.6}}>Сумма</div>
-            <div style={{fontSize: '20px', fontWeight: '800'}}>{cart.reduce((s, i) => s + Number(i.price), 0)} ₽</div>
+            <div style={{fontSize: '11px', opacity: 0.5, textTransform: 'uppercase'}}>Итого</div>
+            <div style={{fontSize: '22px', fontWeight: '800'}}>{cart.reduce((s, i) => s + Number(i.price), 0)} ₽</div>
           </div>
-          <button className="add-btn" style={{width: 'auto', padding: '15px 30px'}} onClick={handleOrder}>Заказать</button>
+          <button className="add-btn" style={{width: 'auto', padding: '15px 40px'}} onClick={handleOrder}>Заказать</button>
         </div>
       )}
 
       <nav className="nav-bar">
         <button className={`nav-item ${view === 'menu' ? 'active' : ''}`} onClick={() => setView('menu')}>
-          <span style={{fontSize: '20px'}}>☕</span> Меню
+          <span style={{fontSize: '22px'}}>☕</span> Меню
         </button>
         <button className={`nav-item ${view === 'profile' ? 'active' : ''}`} onClick={() => setView('profile')}>
-          <span style={{fontSize: '20px'}}>👤</span> Профиль
+          <span style={{fontSize: '22px'}}>👤</span> Профиль
         </button>
       </nav>
     </div>
