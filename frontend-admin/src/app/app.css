@@ -1,11 +1,10 @@
-/* --- ГЛОБАЛЬНЫЕ НАСТРОЙКИ --- */
 
 :root {
   --bg-main: #fbfbfd;
   --bg-sidebar: #ffffff;
   --text-main: #1d1d1f;
   --text-sub: #86868b;
-  --accent: #d4a373; /* Latte color */
+  --accent: #d4a373; 
   --accent-soft: #f4eae1;
   --white: #ffffff;
   --shadow: 0 10px 40px rgba(0,0,0,0.04);
@@ -21,13 +20,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* --- LAYOUT --- */
+
 .admin-layout {
   display: flex;
   min-height: 100vh;
 }
 
-/* --- SIDEBAR --- */
+
 .sidebar {
   width: 280px;
   background-color: var(--bg-sidebar);
@@ -89,7 +88,6 @@ body {
 .counter-number { font-size: 24px; font-weight: 800; }
 .counter-label { font-size: 13px; opacity: 0.8; font-weight: 500; text-transform: uppercase; }
 
-/* --- ORDERS GRID --- */
 .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 30px; }
 
 .order-card {
@@ -132,7 +130,6 @@ body {
 .action-btn.ready { background-color: var(--accent); }
 .action-btn.deliver { background-color: #34c759; }
 
-/* Status Color Management */
 [data-status="Готовится"] .card-edge { background-color: #007aff; }
 [data-status="Готовится"] .status-badge { background-color: #e3f2fd; color: #007aff; border-color: #bbdefb; }
 
@@ -142,7 +139,6 @@ body {
 [data-status="Выдан"] .card-edge { background-color: #d1d1d6; }
 [data-status="Выдан"] .status-badge { background-color: #f2f2f7; color: #aeaeb2; border-color: #e1e1e6; }
 
-/* --- MENU EDITOR --- */
 .menu-add-card {
   background-color: var(--white); padding: 35px; border-radius: 24px; box-shadow: var(--shadow);
   border: var(--border); margin-bottom: 40px;
@@ -170,7 +166,6 @@ body {
 }
 .btn-add-submit:hover { background-color: #c08d5b; }
 
-/* MENU TABLE */
 .menu-table-card {
   background-color: var(--white); border-radius: 24px; box-shadow: var(--shadow); border: var(--border); overflow: hidden;
 }
@@ -194,7 +189,6 @@ body {
 }
 .btn-delete-row:hover { color: #d63026; text-decoration: underline; }
 
-/* --- HELPERS & ANIMATIONS --- */
 .empty-state { text-align: center; padding: 120px 0; color: var(--text-sub); background: white; border-radius: 24px; border: var(--border); box-shadow: var(--shadow); }
 .empty-icon { font-size: 70px; display: block; margin-bottom: 30px; opacity: 0.5; }
 .empty-title { font-size: 24px; color: var(--text-main); margin-bottom: 10px; font-weight: 700; }
