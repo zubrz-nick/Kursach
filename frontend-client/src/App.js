@@ -6,7 +6,8 @@ const App = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [authData, setAuthData] = useState({ name: '', email: '', password: '' });
   
-  const [view, setView] = useState('menu');
+  const [view, setView] = useState('menu'); // menu | profile
+  const [isCartOpen, setIsCartOpen] = useState(false); // Состояние открытия корзины
   const [items, setItems] = useState([]);
   const [cart, setCart] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -31,13 +32,8 @@ const App = () => {
       body: JSON.stringify({ action, ...authData })
     });
     const result = await response.json();
-    
-    if (result.id) {
-      localStorage.setItem('user', JSON.stringify(result));
-      setUser(result);
-    } else {
-      alert('Ошибка доступа. Проверьте данные.');
-    }
+    if (result.id) { setUser(result); localStorage.setItem('user', JSON.stringify(result)); }
+    else { alert('Ошибка! Проверьте данные.'); }
   };
 
   const handleOrder = () => {
@@ -51,51 +47,35 @@ const App = () => {
       })
     }).then(() => {
       setCart([]);
-      alert('Заказ принят! ☕');
+      setIsCartOpen(false);
+      alert('Заказ отправлен! ☕');
       window.location.reload();
     });
   };
 
-  // ЭКРАН ЛОГИНА / РЕГИСТРАЦИИ
-  if (!user) {
-    return (
-      <div className="auth-container fade-in">
-        <div className="auth-card">
-          <div className="auth-header">
-            <span style={{fontSize: '40px'}}>☕</span>
-            <h1>Etika<span style={{color: '#d4a373'}}>.</span></h1>
-            <p>{isRegister ? 'Создайте аккаунт' : 'С возвращением!'}</p>
-          </div>
-          
-          <form onSubmit={handleAuth} className="auth-form">
-            {isRegister && (
-              <input 
-                type="text" placeholder="Имя / Компания" required
-                onChange={e => setAuthData({...authData, name: e.target.value})} 
-              />
-            )}
-            <input 
-              type="email" placeholder="Email" required
-              onChange={e => setAuthData({...authData, email: e.target.value})} 
-            />
-            <input 
-              type="password" placeholder="Пароль" required
-              onChange={e => setAuthData({...authData, password: e.target.value})} 
-            />
-            <button type="submit" className="add-btn" style={{marginTop: '10px'}}>
-              {isRegister ? 'Зарегистрироваться' : 'Войти'}
-            </button>
-          </form>
-          
-          <button className="switch-btn" onClick={() => setIsRegister(!isRegister)}>
-            {isRegister ? 'Уже есть аккаунт? Войти' : 'Нет аккаунта? Регистрация'}
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const removeFromCart = (index) => {
+    const newCart = [...cart];
+    newCart.splice(index, 1);
+    setCart(newCart);
+  };
 
-  // ОСНОВНОЙ КОНТЕНТ (тот же, что и раньше)
+  if (!user) return (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h1>Etika<span>.</span></h1>
+        <form onSubmit={handleAuth} className="auth-form">
+          {isRegister && <input type="text" placeholder="Имя" onChange={e => setAuthData({...authData, name: e.target.value})} required />}
+          <input type="email" placeholder="Email" onChange={e => setAuthData({...authData, email: e.target.value})} required />
+          <input type="password" placeholder="Пароль" onChange={e => setAuthData({...authData, password: e.target.value})} required />
+          <button type="submit" className="add-btn">{isRegister ? 'Создать аккаунт' : 'Войти'}</button>
+        </form>
+        <button className="switch-btn" onClick={() => setIsRegister(!isRegister)}>
+          {isRegister ? 'Уже есть аккаунт? Войти' : 'Нет аккаунта? Регистрация'}
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="app-container">
       <header className="header">
@@ -107,22 +87,21 @@ const App = () => {
         <div className="fade-in">
           <div className="loyalty-section">
             <div className="loyalty-card">
-              <h4>Ваши бонусы 🎁</h4>
-              <p style={{fontSize: '13px', opacity: 0.8, margin: '5px 0'}}>Каждый 6-й заказ со скидкой 50%!</p>
+              <h4>Бонусы 🎁</h4>
               <div className="progress-container">
                 <div className="progress-bar" style={{ width: `${(orders.length % 6) / 6 * 100}%` }}></div>
               </div>
-              <small>{6 - (orders.length % 6)} заказов до бонуса</small>
+              <small>{6 - (orders.length % 6)} заказов до подарка</small>
             </div>
           </div>
 
           <div className="menu-grid">
             {items.map(item => (
               <div key={item.id} className="product-card">
-                <span className="product-icon">{item.icon || '☕'}</span>
+                <span className="product-icon">{item.icon}</span>
                 <span className="product-name">{item.name}</span>
                 <span className="product-price">{item.price} ₽</span>
-                <button className="add-btn" onClick={() => setCart([...cart, item])}>В корзину</button>
+                <button className="add-btn" onClick={() => setCart([...cart, item])}>Добавить</button>
               </div>
             ))}
           </div>
@@ -130,8 +109,8 @@ const App = () => {
       ) : (
         <div className="profile-section fade-in" style={{padding: '0 20px'}}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
-            <h2>История заказов</h2>
-            <button onClick={() => { localStorage.removeItem('user'); window.location.reload(); }} className="logout-btn">Выйти 🚪</button>
+            <h2>Заказы</h2>
+            <button onClick={() => { localStorage.removeItem('user'); window.location.reload(); }} className="logout-btn">Выйти</button>
           </div>
           {orders.map(o => (
             <div key={o.id} className="order-history-card">
@@ -139,20 +118,47 @@ const App = () => {
                 <strong>#{o.id}</strong>
                 <span className="status-text">{o.status}</span>
               </div>
-              <p style={{margin: '10px 0', fontSize: '14px', color: '#666'}}>{o.description}</p>
+              <p>{o.description}</p>
               <div style={{fontWeight: '800'}}>{o.total_amount} ₽</div>
             </div>
           ))}
         </div>
       )}
 
-      {cart.length > 0 && view === 'menu' && (
-        <div className="cart-float">
-          <div>
-            <div style={{fontSize: '11px', opacity: 0.5}}>Итого</div>
-            <div style={{fontSize: '22px', fontWeight: '800'}}>{cart.reduce((s, i) => s + Number(i.price), 0)} ₽</div>
+      {/* НОВАЯ ПЛАВАЮЩАЯ КНОПКА КОРЗИНЫ (не перекрывает навигацию) */}
+      {cart.length > 0 && (
+        <button className="cart-badge-btn" onClick={() => setIsCartOpen(true)}>
+          🛒 {cart.length} товара — {cart.reduce((s, i) => s + Number(i.price), 0)} ₽
+        </button>
+      )}
+
+      {/* ВЫДВИЖНОЕ ОКНО КОРЗИНЫ */}
+      {isCartOpen && (
+        <div className="cart-overlay fade-in">
+          <div className="cart-modal slide-up">
+            <div className="modal-header">
+              <h3>Ваш заказ</h3>
+              <button onClick={() => setIsCartOpen(false)}>✕</button>
+            </div>
+            <div className="cart-items-list">
+              {cart.map((item, index) => (
+                <div key={index} className="cart-item">
+                  <span>{item.icon} {item.name}</span>
+                  <div>
+                    <span style={{marginRight: '15px'}}>{item.price} ₽</span>
+                    <button onClick={() => removeFromCart(index)} className="del-btn">✕</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="modal-footer">
+              <div className="total-row">
+                <span>Итого:</span>
+                <b>{cart.reduce((s, i) => s + Number(i.price), 0)} ₽</b>
+              </div>
+              <button className="add-btn" onClick={handleOrder}>Подтвердить заказ</button>
+            </div>
           </div>
-          <button className="add-btn" style={{width: 'auto', padding: '15px 40px'}} onClick={handleOrder}>Заказать</button>
         </div>
       )}
 
