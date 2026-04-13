@@ -4,11 +4,21 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PATCH");
 header("Access-Control-Allow-Headers: Content-Type");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit; }
+$dsn = getenv('postgresql://etika_db_user:k3RC7YAIyqYcfpW34178RpKxKcDIWnj0@dpg-d7eip0n7f7vs738s019g-a/etika_db');
 
-header("Content-Type: application/json");
-
+if (!$dsn) {
+    $host = 'db'; 
+    $db   = 'etika_db';
+    $user = 'postgres';
+    $pass = 'password';
+    $dsn = "pgsql:host=$host;port=5432;dbname=$db;user=$user;password=$pass";
+}
 try {
-    $pdo = new PDO("pgsql:host=db;dbname=etika_db", "postgres", "password");
+    if (strpos($dsn, 'postgres://') === 0) {
+    $dsn = str_replace('postgres://', 'pgsql:', $dsn);
+    }
+    $pdo = new PDO($dsn);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     try {
     $createTableSql = "CREATE TABLE IF NOT EXISTS orders (
         id SERIAL PRIMARY KEY,
