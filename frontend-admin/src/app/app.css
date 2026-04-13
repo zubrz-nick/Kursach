@@ -8,3 +8,72 @@
 [data-status="Готов"] .badge { background: #d1e7dd; color: #0f5132; }
 button { cursor: pointer; border-radius: 8px; transition: 0.2s; border: none; padding: 8px 15px; }
 .add-form { background: white; padding: 25px; border-radius: 15px; margin-bottom: 30px; display: flex; gap: 15px; }
+/* Вставь это в app.css в Angular проекте */
+.admin-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: #fdfcfb;
+}
+
+.sidebar {
+  width: 260px;
+  background: #121212;
+  color: white;
+  padding: 40px 20px;
+  position: fixed;
+  height: 100vh;
+}
+
+.main-content {
+  margin-left: 260px; /* Отступ под сайдбар */
+  padding: 40px;
+  width: 100%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.order-tile {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  border: 1px solid #f2f2f2;
+}
+
+.tile-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.price {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.btn-s {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  background: #d4a373;
+  color: white;
+}
+
+.pulse {
+  width: 8px;
+  height: 8px;
+  background: #4caf50;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+  box-shadow: 0 0 8px #4caf50;
+}
