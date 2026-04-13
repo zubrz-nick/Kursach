@@ -10,19 +10,26 @@ $databaseUrl = getenv('DATABASE_URL');
 try {
     if ($databaseUrl) {
         $dbopts = parse_url($databaseUrl);
-        $dsn = "pgsql:host=" . $dbopts["host"] . ";port=" . $dbopts["port"] . ";dbname=" . ltrim($dbopts["path"], '/');
+        
+        // Проверяем наличие порта, если его нет — ставим 5432
+        $port = isset($dbopts["port"]) ? $dbopts["port"] : "5432";
+        $host = $dbopts["host"];
+        $dbname = ltrim($dbopts["path"], '/');
         $user = $dbopts["user"];
         $pass = $dbopts["pass"];
+
+        $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
     } else {
         $dsn = "pgsql:host=db;port=5432;dbname=etika_db";
         $user = "postgres";
         $pass = "password";
     }
 
-    // ИСПРАВЛЕННАЯ СТРОКА 29 (используем массив [])
     $pdo = new PDO($dsn, $user, $pass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION 
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
     ]);
+
+    // Дальше код создания таблицы и вывода данных...
 
     // 3. АВТОМАТИЧЕСКОЕ СОЗДАНИЕ ТАБЛИЦЫ (если её еще нет)
     $createTableSql = "CREATE TABLE IF NOT EXISTS orders (
