@@ -6,8 +6,8 @@ const App = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [authData, setAuthData] = useState({ name: '', email: '', password: '' });
   
-  const [view, setView] = useState('menu'); // menu | profile
-  const [isCartOpen, setIsCartOpen] = useState(false); // Состояние открытия корзины
+  const [view, setView] = useState('menu'); 
+  const [isCartOpen, setIsCartOpen] = useState(false); 
   const [items, setItems] = useState([]);
   const [cart, setCart] = useState([]);
   const [orders, setOrders] = useState([]);
