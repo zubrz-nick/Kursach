@@ -22,7 +22,7 @@ export class AppComponent implements OnInit {
 
 refreshOrders() {
     // ЗАМЕНИЛИ 'http://localhost:8000/index.php' на переменную + путь к файлу
-    this.http.get<any[]>(`${this.apiUrl}/index.php`).subscribe({
+    this.http.get<any[]>(`https://kursach-h63g.onrender.com/index.php`).subscribe({
       next: (data) => {
         this.orders = data;
         this.cdr.detectChanges();
@@ -33,7 +33,7 @@ refreshOrders() {
 
   updateStatus(id: number, status: string) {
     // ЗАМЕНИЛИ 'http://localhost:8000/index.php' на переменную
-    this.http.patch(`${this.apiUrl}/index.php`, { id, status }).subscribe({
+    this.http.patch(`https://kursach-h63g.onrender.com/index.php`, { id, status }).subscribe({
       next: () => this.refreshOrders(),
       error: (err) => console.error('Ошибка обновления:', err)
     });
