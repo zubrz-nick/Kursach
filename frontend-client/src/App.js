@@ -168,13 +168,36 @@ export default function App() {
   };
 
   const handleOrder = async () => {
-    if (cart.length === 0) return;
-    const desc = cart.map(i => i.name).join(', ');
-    const total = cart.reduce((sum, i) => sum + i.price, 0);
-    await fetch('https://kursach-h63g.onrender.com/index.php', { method: 'POST', body: JSON.stringify({ user_id: user.id, description: desc, total_amount: total })});
-    setCart([]);
-    alert('Заказ принят!');
-  };
+  if (cart.length === 0) return;
+
+  const desc = cart.map(i => i.name).join(', ');
+  const total = cart.reduce((sum, i) => sum + i.price, 0);
+
+  try {
+    const res = await fetch('https://kursach-h63g.onrender.com/index.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json', // Обязательно для передачи JSON
+      },
+      body: JSON.stringify({
+        action: 'create_order', // Добавляем экшен для PHP
+        user_id: user.id,
+        description: desc,
+        total_amount: total
+      })
+    });
+
+    if (res.ok) {
+      setCart([]);
+      alert('Заказ принят! Проверьте статус в профиле.');
+    } else {
+      alert('Ошибка сервера при оформлении заказа');
+    }
+  } catch (err) {
+    console.error("Ошибка при заказе:", err);
+    alert('Не удалось связаться с сервером');
+  }
+};
 
   if (!user) return <AuthScreen onLogin={login} onRegister={register} />;
 
