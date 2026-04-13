@@ -56,3 +56,4 @@ const Menu = ({ cart, onAddToCart, onRemoveFromCart, onOrder }) => {
     </div>
   );
 };
+export default App;
