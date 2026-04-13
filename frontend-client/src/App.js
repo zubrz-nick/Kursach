@@ -145,7 +145,7 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
     const fetchOrders = () => {
-      fetch(`http://localhost:8000/index.php?user_id=${user.id}`)
+      fetch(`https://kursach-h63g.onrender.com/index.php?user_id=${user.id}`)
         .then(res => res.json())
         .then(data => setOrders(Array.isArray(data) ? data : []))
         .catch(err => console.error("Ошибка загрузки:", err));
@@ -156,13 +156,13 @@ export default function App() {
   }, [user]);
 
   const login = async (email, password) => {
-    const res = await fetch('http://localhost:8000/index.php', { method: 'POST', body: JSON.stringify({ action: 'login', email, password })});
+    const res = await fetch('https://kursach-h63g.onrender.com/index.php', { method: 'POST', body: JSON.stringify({ action: 'login', email, password })});
     const data = await res.json();
     if (data.id) { setUser(data); localStorage.setItem('user', JSON.stringify(data)); } else { alert(data.error || "Ошибка входа"); }
   };
 
   const register = async (name, email, password) => {
-    const res = await fetch('http://localhost:8000/index.php', { method: 'POST', body: JSON.stringify({ action: 'register', name, email, password })});
+    const res = await fetch('https://kursach-h63g.onrender.com/index.php', { method: 'POST', body: JSON.stringify({ action: 'register', name, email, password })});
     const data = await res.json();
     if (data.id) { setUser(data); localStorage.setItem('user', JSON.stringify(data)); } else { alert(data.error || "Ошибка регистрации"); }
   };
@@ -171,7 +171,7 @@ export default function App() {
     if (cart.length === 0) return;
     const desc = cart.map(i => i.name).join(', ');
     const total = cart.reduce((sum, i) => sum + i.price, 0);
-    await fetch('http://localhost:8000/index.php', { method: 'POST', body: JSON.stringify({ user_id: user.id, description: desc, total_amount: total })});
+    await fetch('https://kursach-h63g.onrender.com/index.php', { method: 'POST', body: JSON.stringify({ user_id: user.id, description: desc, total_amount: total })});
     setCart([]);
     alert('Заказ принят!');
   };
